@@ -5311,10 +5311,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
         if let Some(uri) = enrollment_uri {
             println!(
                 "{}",
-                t(
-                    "cli-otp-initialized",
-                    "Initialized OTP secret for Airis."
-                )
+                t("cli-otp-initialized", "Initialized OTP secret for Airis.")
             );
             println!(
                 "{}",
@@ -8844,10 +8841,7 @@ fn handle_estop_command(
                 if let Some(uri) = enrollment_uri {
                     println!(
                         "{}",
-                        t(
-                            "cli-otp-initialized",
-                            "Initialized OTP secret for Airis."
-                        )
+                        t("cli-otp-initialized", "Initialized OTP secret for Airis.")
                     );
                     println!(
                         "{}",
