@@ -269,22 +269,6 @@ agent-browser snapshot -i  # Now get the actual content
 
 </div>
 
-### Docker sandbox network restrictions
-
-If `web_fetch` fails inside Docker sandbox, use agent-browser instead:
-
-<div class="os-tabs-src">
-
-#### sh
-
-```sh
-# Instead of web_fetch, use:
-agent-browser open https://example.com
-agent-browser get text body
-```
-
-</div>
-
 ## Security Notes
 
 - `agent-browser` runs Chrome in headless mode with sandboxing
