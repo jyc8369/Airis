@@ -34,7 +34,7 @@ cli-auth-about = Gérer les profils d'authentification des abonnements fournisse
 cli-hardware-about = Découvrir et analyser le matériel USB
 cli-peripheral-about = Gérer les périphériques matériels
 cli-memory-about = Gérer les entrées de mémoire de l'agent
-cli-config-about = Gérer la configuration de ZeroClaw
+cli-config-about = Gérer la configuration de Airis
 cli-update-about = Vérifier et appliquer les mises à jour de ZeroClaw
 cli-self-test-about = Exécuter les tests d'autodiagnostic
 cli-completions-about = Générer des scripts d'achèvement de shell
@@ -71,7 +71,7 @@ cli-wechat-scanned-confirm = 👀 Scanné ! Confirmez sur votre téléphone...
 cli-wechat-qr-expired-refreshing = ⏳ Code QR expiré, actualisation...
 cli-wechat-login-confirmed-missing-field = Connexion confirmée mais {$field} manquant.
 cli-wechat-connected = ✅ WeChat connecté !
-cli-wechat-bound-success = ✅ Compte WeChat lié avec succès. Vous pouvez maintenant parler à ZeroClaw.
+cli-wechat-bound-success = ✅ Compte WeChat lié avec succès. Vous pouvez maintenant parler à Airis.
 cli-wechat-invalid-bind-code = ❌ Code de liaison invalide. Veuillez réessayer.
 cli-skills-list-about = Lister toutes les compétences installées
 cli-skills-audit-about = Auditer un répertoire source de compétence ou une compétence installée
@@ -171,7 +171,7 @@ cli-peripheral-flash-about = Flasher le firmware de ZeroClaw sur une carte Ardui
 cli-sop-list-about = Lister les SOP (Procédures Opérationnelles Standard) chargées
 cli-sop-validate-about = Valider les définitions des SOP
 cli-sop-show-about = Afficher les détails d'une SOP
-cli-migrate-openclaw-about = Importer la mémoire d'un espace de travail OpenClaw vers cet espace de travail ZeroClaw
+cli-migrate-openclaw-about = Importer la mémoire d'un espace de travail OpenClaw vers cet espace de travail Airis
 cli-migrate-openclaw-qdrant-unsupported = Qdrant n’est actuellement pas pris en charge comme cible de migration OpenClaw. Définissez memory.backend sur sqlite, lucid ou markdown, puis réessayez.
 cli-agent-long-about =
     Démarrer la boucle de l'agent IA.
@@ -206,7 +206,7 @@ cli-acp-long-about =
 cli-daemon-long-about =
     Démarrer le daemon autonome longue durée.
 
-    Lance l'exécution Runtime complète de ZeroClaw : serveur gateway, tous les canaux configurés (Telegram, Discord, Slack, etc., moniteur de cœur et planificateur cron. C'est la méthode recommandée pour exécuter ZeroClaw en production ou comme assistant toujours actif.
+    Lance l'exécution Runtime complète de Airis : serveur gateway, tous les canaux configurés (Telegram, Discord, Slack, etc., moniteur de cœur et planificateur cron. C'est la méthode recommandée pour exécuter Airis en production ou comme assistant toujours actif.
 
     Utilisez 'zeroclaw service install' pour enregistrer le daemon en tant que service OS (systemd/launchd) pour un démarrage automatique au démarrage.
 
@@ -234,7 +234,7 @@ cli-cron-long-about =
 cli-channel-long-about =
     Gérer les canaux de communication.
 
-    Ajouter, supprimer, lister, envoyer et vérifier la santé des canaux qui connectent ZeroClaw aux plateformes de messagerie. Types de canaux pris en charge : telegram, discord, slack, whatsapp, matrix, imessage, email.
+    Ajouter, supprimer, lister, envoyer et vérifier la santé des canaux qui connectent Airis aux plateformes de messagerie. Types de canaux pris en charge : telegram, discord, slack, whatsapp, matrix, imessage, email.
 
     Exemples :
     zeroclaw channel list
@@ -278,7 +278,7 @@ cli-memory-long-about =
 
     La complétion par tabulation est automatiquement incluse dans les sous-commandes de complétion.
 cli-config-long-about =
-    Gérer la configuration de ZeroClaw.
+    Gérer la configuration de Airis.
 
     Afficher, définir ou initialiser les propriétés de la configuration par chemin ponctué. Utilisez 'schema' pour.dumping le schéma JSON complet pour le fichier de configuration.
 
@@ -314,7 +314,7 @@ cli-update-long-about =
     zeroclaw update --force              # installer sans confirmation
     zeroclaw update --version 0.6.0      # installer une version spécifique
 cli-self-test-long-about =
-    Exécute les tests d'auto-diagnostic pour vérifier l'installation de ZeroClaw.
+    Exécute les tests d'auto-diagnostic pour vérifier l'installation de Airis.
 
     Par défaut, exécutera l'ensemble complet des tests incluant les vérifications réseau (santé du pont, mémoire aller-retour). Utilisez --quick pour ignorer les vérifications réseau afin d'obtenir une validation hors ligne plus rapide.
 
@@ -658,7 +658,7 @@ cli-quickstart-complete = Quickstart terminé. Agent `{$alias}` créé.
 cli-next-steps = Étapes suivantes :
 cli-agent-not-created = Votre agent n'a pas été créé — et rien n'a été modifié sur le disque.
 cli-onboard-deprecated = `zeroclaw onboard` est obsolète — utilisez `zeroclaw quickstart`.
-cli-otp-initialized = Secret OTP initialisé pour ZeroClaw.
+cli-otp-initialized = Secret OTP initialisé pour Airis.
 cli-otp-enrollment-uri = URI d'enregistrement : {$uri}
 cli-otp-received = {"  "}✓ OTP reçu
 cli-secret-captured = {"  "}● Valeur capturée — appuyez sur Entrée pour enregistrer
@@ -683,8 +683,8 @@ cli-pairing-rotate-no-code = La demande de rotation s'est terminée sans renvoye
 cli-pairing-check-enabled = Vérifiez que l'appairage est activé, puis demandez un code pour un nouvel appareil :
 cli-pairing-inspect = Pour inspecter la passerelle en cours d'exécution :
 cli-gateway-running-q = {"   "}La passerelle est-elle en cours d'exécution ? Démarrez-la avec :
-cli-status-title = 🦀 État de ZeroClaw
-cli-security-status-title = État de sécurité ZeroClaw
+cli-status-title = 🦀 État de Airis
+cli-security-status-title = État de sécurité Airis
 cli-security-status-source = Source :      {$v}
 cli-security-status-agent = Agent :       {$v}
 cli-security-status-agent-enabled = Agent activé : {$enabled}
@@ -998,11 +998,11 @@ cli-gateway-restart-hint-container = docker compose restart
 cli-gateway-restart-hint-systemd = systemctl restart zeroclaw
 cli-gateway-restart-hint-launchd = launchctl kickstart -k <your-zeroclaw-label>
 cli-gateway-restart-hint-process = redémarrez le processus `zeroclaw daemon`
-cli-daemon-gateway-already-running = Une passerelle ZeroClaw est déjà en cours d'exécution sur {$host}:{$port}. Le démon supervise sa propre passerelle et ne démarrera pas une seconde passerelle sur la même adresse. Arrêtez cette passerelle (ou pointez le démon vers un port libre avec `zeroclaw config set gateway.port <port>`), puis relancez le démon.
+cli-daemon-gateway-already-running = Une passerelle Airis est déjà en cours d'exécution sur {$host}:{$port}. Le démon supervise sa propre passerelle et ne démarrera pas une seconde passerelle sur la même adresse. Arrêtez cette passerelle (ou pointez le démon vers un port libre avec `zeroclaw config set gateway.port <port>`), puis relancez le démon.
 cli-daemon-gateway-port-occupied = L'adresse de passerelle {$host}:{$port} est déjà utilisée par un autre processus. Libérez le port ou pointez le démon vers un port libre (`zeroclaw config set gateway.port <port>`), puis relancez le démon.
-cli-daemon-starting-title = 🧠 Le démon ZeroClaw démarre…
+cli-daemon-starting-title = 🧠 Le démon Airis démarre…
 cli-daemon-starting-detail = Préparation des endpoints configurés du démon
-cli-daemon-started-title = 🧠 Le démon ZeroClaw est prêt
+cli-daemon-started-title = 🧠 Le démon Airis est prêt
 cli-daemon-started-gateway = Passerelle : {$url}
 cli-daemon-started-socket = Socket :     {$path}
 cli-daemon-started-pairing = Appairage : activé (voir ci-dessus l'état actuel de la passerelle)
