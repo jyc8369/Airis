@@ -80,7 +80,7 @@ pub enum SessionPersistence {
 }
 
 /// Product-neutral description of the active user-facing interaction harness.
-/// All fields are resolved by ZeroClaw from a closed surface identifier and
+/// All fields are resolved by Airis from a closed surface identifier and
 /// canonical session state.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct InteractionContext {
@@ -220,7 +220,7 @@ impl PromptSection for InteractionSection {
         };
         let tools_and_approvals = match interaction.tools_and_approvals {
             ToolAuthority::RuntimeEnforced => {
-                "provided and enforced by the ZeroClaw runtime; this description grants no capabilities"
+                "provided and enforced by the Airis runtime; this description grants no capabilities"
             }
         };
         let memory = match interaction.memory {
@@ -255,6 +255,12 @@ impl PromptSection for IdentitySection {
 
     fn build(&self, ctx: &PromptContext<'_>) -> Result<String> {
         let mut prompt = String::from("## Project Context\n\n");
+        let airis_identity = identity::airis_identity_to_system_prompt(ctx.identity_config);
+        if !airis_identity.is_empty() {
+            prompt.push_str(&airis_identity);
+            prompt.push_str("\n\n");
+        }
+
         let mut has_aieos = false;
         if let Some(config) = ctx.identity_config
             && identity::is_aieos_configured(config)
