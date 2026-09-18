@@ -6,8 +6,8 @@ resolver = "2"
 version = "0.8.5"
 edition = "2024"
 license = "MIT OR Apache-2.0"
-repository = "https://github.com/zeroclaw-labs/zeroclaw"
-homepage = "https://www.zeroclaw.com"
+repository = "https://github.com/jyc8369/Airis"
+homepage = "https://github.com/jyc8369/Airis"
 rust-version = "1.96.0"
 
 [workspace.dependencies]
@@ -46,10 +46,10 @@ version.workspace = true
 edition.workspace = true
 authors = ["theonlyhennygod"]
 license.workspace = true
-description = "Zero overhead. Zero compromise. 100% Rust. The fastest, smallest AI assistant."
+description = "Airis — a personal AI assistant runtime in Rust, derived from ZeroClaw."
 repository.workspace = true
 homepage.workspace = true
-documentation = "https://docs.zeroclaw.com"
+documentation = "https://github.com/jyc8369/Airis/tree/master/docs"
 readme = "README.md"
 keywords = ["ai", "agent", "cli", "assistant", "chatbot"]
 categories = ["command-line-utilities", "api-bindings"]
@@ -209,14 +209,6 @@ dist_extra_features = [
     "whatsapp-web",
 ]
 
-# Features whose build needs system C libraries or tooling the minimal static
-# container image (StageX, no system package manager) does not provide. Excluded
-# from the container kitchen-sink (Selection::All) so the all-features image
-# builds; still available via source --features or a nix override. Not derivable
-# from the feature graph, so it lives in the canonical registry.
-container_excluded_features = [
-    "voice-wake",
-]
 
 # Compatibility exclusions for standard distribution artifacts. Release
 # workflows pass only their target triple; feature policy stays here.

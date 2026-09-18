@@ -6834,9 +6834,46 @@ impl Default for MediaPipelineConfig {
 
 // ── Identity (AIEOS / OpenClaw format) ──────────────────────────
 
+/// Airis-specific identity overlay.
+///
+/// This deliberately lives outside the AIEOS document so Airis can carry a
+/// canonical project/assistant name and an optional localized display name
+/// without extending or overloading the upstream AIEOS schema.
+#[derive(Debug, Clone, Serialize, Deserialize, Configurable)]
+#[cfg_attr(feature = "schema-export", derive(schemars::JsonSchema))]
+#[prefix = "identity.airis"]
+pub struct AirisIdentityConfig {
+    /// Canonical assistant/project name used across languages.
+    #[serde(default = "default_airis_canonical_name")]
+    pub canonical_name: String,
+    /// Optional localized display name. This does not select conversation language.
+    #[serde(default)]
+    pub localized_name: Option<String>,
+}
+
+fn default_airis_canonical_name() -> String {
+    "Airis".into()
+}
+
+impl AirisIdentityConfig {
+    fn is_default(&self) -> bool {
+        self.canonical_name == default_airis_canonical_name() && self.localized_name.is_none()
+    }
+}
+
+impl Default for AirisIdentityConfig {
+    fn default() -> Self {
+        Self {
+            canonical_name: default_airis_canonical_name(),
+            localized_name: None,
+        }
+    }
+}
+
 /// Identity format configuration (`[identity]` section).
 ///
-/// Supports `"openclaw"` (default) or `"aieos"` identity documents.
+/// Supports `"openclaw"` (default) or `"aieos"` identity documents, plus
+/// an Airis-specific overlay at `[agents.<alias>.identity.airis]`.
 #[derive(Debug, Clone, Serialize, Deserialize, Configurable)]
 #[cfg_attr(feature = "schema-export", derive(schemars::JsonSchema))]
 #[prefix = "identity"]
@@ -6850,6 +6887,10 @@ pub struct IdentityConfig {
     /// Inline AIEOS JSON (alternative to file path)
     #[serde(default)]
     pub aieos_inline: Option<String>,
+    /// Airis identity overlay, kept separate from OpenClaw/AIEOS identity data.
+    #[serde(default, skip_serializing_if = "AirisIdentityConfig::is_default")]
+    #[nested]
+    pub airis: AirisIdentityConfig,
 }
 
 fn default_identity_format() -> String {
@@ -6862,6 +6903,7 @@ impl Default for IdentityConfig {
             format: default_identity_format(),
             aieos_path: None,
             aieos_inline: None,
+            airis: AirisIdentityConfig::default(),
         }
     }
 }

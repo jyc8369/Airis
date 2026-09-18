@@ -713,6 +713,34 @@ fn non_empty_list_at(value: &Value, path: &[&str]) -> Option<Vec<String>> {
     }
 }
 
+/// Render the Airis-specific identity overlay.
+///
+/// The overlay is intentionally independent of the OpenClaw/AIEOS document
+/// format. The canonical Airis name is always available; a localized name is
+/// optional and does not select or imply the conversation language.
+pub fn airis_identity_to_system_prompt(config: Option<&IdentityConfig>) -> String {
+    use std::fmt::Write;
+
+    let canonical_name = config
+        .map(|config| config.airis.canonical_name.trim())
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Airis");
+    let localized_name = config
+        .and_then(|config| config.airis.localized_name.as_deref())
+        .map(str::trim)
+        .filter(|name| !name.is_empty());
+
+    let mut prompt = String::from("## Airis Identity\n\n");
+    let _ = writeln!(prompt, "**Canonical Name:** {canonical_name}");
+    if let Some(localized_name) = localized_name {
+        let _ = writeln!(prompt, "**Localized Name:** {localized_name}");
+    }
+    prompt.push_str(
+        "\nThe canonical name is the primary assistant identity and takes precedence over alternate names in other identity sources. A localized name is only an optional display alias and does not imply a conversation language.",
+    );
+    prompt
+}
+
 /// Convert AIEOS identity to a system prompt string.
 /// Formats the AIEOS data into a structured markdown prompt compatible
 /// with ZeroClaw's agent system.
@@ -986,6 +1014,25 @@ mod tests {
     use super::*;
 
     #[test]
+    fn airis_identity_prompt_defaults_to_airis() {
+        let prompt = airis_identity_to_system_prompt(None);
+        assert!(prompt.contains("## Airis Identity"));
+        assert!(prompt.contains("**Canonical Name:** Airis"));
+        assert!(!prompt.contains("**Localized Name:**"));
+    }
+
+    #[test]
+    fn airis_identity_prompt_supports_optional_localized_name() {
+        let mut config = IdentityConfig::default();
+        config.airis.localized_name = Some("Localized Airis".into());
+
+        let prompt = airis_identity_to_system_prompt(Some(&config));
+        assert!(prompt.contains("**Canonical Name:** Airis"));
+        assert!(prompt.contains("**Localized Name:** Localized Airis"));
+        assert!(prompt.contains("does not imply a conversation language"));
+    }
+
+    #[test]
     fn aieos_identity_parse_minimal() {
         let json = r#"{"identity":{"names":{"first":"Nova"}}}"#;
         let identity: AieosIdentity = serde_json::from_str(json).unwrap();
@@ -1235,6 +1282,7 @@ mod tests {
             format: "aieos".into(),
             aieos_path: Some("identity.json".into()),
             aieos_inline: None,
+            airis: Default::default(),
         };
         assert!(is_aieos_configured(&config));
     }
@@ -1245,6 +1293,7 @@ mod tests {
             format: "aieos".into(),
             aieos_path: None,
             aieos_inline: Some("{\"identity\":{}}".into()),
+            airis: Default::default(),
         };
         assert!(is_aieos_configured(&config));
     }
@@ -1255,6 +1304,7 @@ mod tests {
             format: "openclaw".into(),
             aieos_path: Some("identity.json".into()),
             aieos_inline: None,
+            airis: Default::default(),
         };
         assert!(!is_aieos_configured(&config));
     }
@@ -1265,6 +1315,7 @@ mod tests {
             format: "aieos".into(),
             aieos_path: None,
             aieos_inline: None,
+            airis: Default::default(),
         };
         assert!(!is_aieos_configured(&config));
     }
@@ -1443,6 +1494,7 @@ mod tests {
             format: "aieos".into(),
             aieos_path: Some("identity.json".into()),
             aieos_inline: None,
+            airis: Default::default(),
         };
 
         let identity = load_aieos_identity(&config, temp.path()).unwrap().unwrap();

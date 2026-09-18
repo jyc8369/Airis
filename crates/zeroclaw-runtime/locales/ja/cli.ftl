@@ -34,7 +34,7 @@ cli-auth-about = プロバイダー サブスクリプション認証プロフ�
 cli-hardware-about = USBハードウェアを発見・内省
 cli-peripheral-about = ハードウェアペリフェラルを管理
 cli-memory-about = エージェントメモリエントリを管理
-cli-config-about = ZeroClaw設定を管理
+cli-config-about = Airis設定を管理
 cli-update-about = ZeroClaw更新を確認・適用
 cli-self-test-about = 診断自己テストを実行
 cli-completions-about = シェル補完スクリプトを生成
@@ -71,7 +71,7 @@ cli-wechat-scanned-confirm = 👀 スキャンされました！スマートフ�
 cli-wechat-qr-expired-refreshing = ⏳ QRコードの期限が切れました。更新中...
 cli-wechat-login-confirmed-missing-field = ログインは確認されましたが、{$field} がありません。
 cli-wechat-connected = ✅ WeChat に接続しました！
-cli-wechat-bound-success = ✅ WeChatアカウントが正常にバインドされました。これで ZeroClaw と会話できます。
+cli-wechat-bound-success = ✅ WeChatアカウントが正常にバインドされました。これで Airis と会話できます。
 cli-wechat-invalid-bind-code = ❌ 無効なバインドコードです。もう一度お試しください。
 cli-skills-list-about = すべてのインストール済みスキルをリスト表示
 cli-skills-audit-about = スキルソースディレクトリまたはインストール済みスキル名を監査
@@ -169,7 +169,7 @@ cli-peripheral-flash-about = Arduino ボードに ZeroClaw ファームウェア
 cli-sop-list-about = ロードされた SOP を一覧表示
 cli-sop-validate-about = SOP 定義を検証
 cli-sop-show-about = SOP の詳細を表示
-cli-migrate-openclaw-about = OpenClaw ワークスペースからこの ZeroClaw ワークスペースにメモリをインポート
+cli-migrate-openclaw-about = OpenClaw ワークスペースからこの Airis ワークスペースにメモリをインポート
 cli-migrate-openclaw-qdrant-unsupported = Qdrant は現在、OpenClaw の移行先としてサポートされていません。memory.backend を sqlite、lucid、または markdown に設定して再試行してください。
 cli-agent-long-about =
     AI エージェントループを起動します。
@@ -204,7 +204,7 @@ cli-acp-long-about =
 cli-daemon-long-about =
     長時間実行の自律型デーモンを起動します。
 
-    完全な ZeroClaw ランタイムを起動します: ゲートウェイサーバー、すべての設定されたチャネル（Telegram、Discord、Slack など）、ハートビートモニター、および cron スケジューラー。これは本番環境またはオンアシスタントとして ZeroClaw を実行する推奨方法です。
+    完全な Airis ランタイムを起動します: ゲートウェイサーバー、すべての設定されたチャネル（Telegram、Discord、Slack など）、ハートビートモニター、および cron スケジューラー。これは本番環境またはオンアシスタントとして Airis を実行する推奨方法です。
 
     デーモンを OS サービス（systemd/launchd）として登録し、ブート時に自動起動するには「zeroclaw service install」を使用してください。
 
@@ -232,7 +232,7 @@ cli-cron-long-about =
 cli-channel-long-about =
     通信チャネルを管理します。
 
-    ZeroClaw をメッセージングプラットフォームに接続するチャネルを追加、削除、一覧表示、送信、およびヘルスチェックします。サポートされるチャネルタイプ: telegram、discord、slack、whatsapp、matrix、imessage、email。
+    Airis をメッセージングプラットフォームに接続するチャネルを追加、削除、一覧表示、送信、およびヘルスチェックします。サポートされるチャネルタイプ: telegram、discord、slack、whatsapp、matrix、imessage、email。
 
     例:
     zeroclaw channel list
@@ -273,7 +273,7 @@ cli-memory-long-about =
     zeroclaw memory get KEY
     zeroclaw memory clear --category conversation --yes
 cli-config-long-about =
-    ZeroClaw 設定を管理します。
+    Airis 設定を管理します。
 
     ドット記法で設定プロパティを表示、設定、または初期化します。「schema」を使用して、設定ファイルの完全な JSON スキーマをダンプします。
 
@@ -309,7 +309,7 @@ cli-update-long-about =
     zeroclaw update --force              # 確認なしでインストール
     zeroclaw update --version 0.6.0      # 特定のバージョンをインストール
 cli-self-test-long-about =
-    診断自己テストを実行して ZeroClaw インストールを検証します。
+    診断自己テストを実行して Airis インストールを検証します。
 
     デフォルトでは、ネットワークチェック（ゲートウェイヘルス、メモリラウンドトリップ）を含む完全なテストスイートを実行します。--quick を使用して、ネットワークチェックをスキップしてより高速なオフライン検証を実行してください。
 
@@ -653,7 +653,7 @@ cli-quickstart-complete = クイックスタートが完了しました。エー
 cli-next-steps = 次のステップ:
 cli-agent-not-created = エージェントは作成されませんでした — ディスク上の変更はありません。
 cli-onboard-deprecated = `zeroclaw onboard` は非推奨です — `zeroclaw quickstart` を使用してください。
-cli-otp-initialized = ZeroClaw用のOTPシークレットを初期化しました。
+cli-otp-initialized = Airis用のOTPシークレットを初期化しました。
 cli-otp-enrollment-uri = 登録URI: {$uri}
 cli-otp-received = {"  "}✓ OTP受信済
 cli-secret-captured = {"  "}● 値を取得しました — Enterで保存
@@ -678,8 +678,8 @@ cli-pairing-rotate-no-code = ローテーション要求は置き換えコード
 cli-pairing-check-enabled = ペアリングが有効か確認してから、新しいデバイスコードを要求してください:
 cli-pairing-inspect = 実行中のゲートウェイを確認するには:
 cli-gateway-running-q = {"   "}ゲートウェイは実行中ですか？次のコマンドで起動してください:
-cli-status-title = 🦀 ZeroClaw ステータス
-cli-security-status-title = ZeroClaw セキュリティステータス
+cli-status-title = 🦀 Airis ステータス
+cli-security-status-title = Airis セキュリティステータス
 cli-security-status-source = ソース:      {$v}
 cli-security-status-agent = エージェント:       {$v}
 cli-security-status-agent-enabled = エージェント有効: {$enabled}
@@ -993,11 +993,11 @@ cli-gateway-restart-hint-container = docker compose restart
 cli-gateway-restart-hint-systemd = systemctl restart zeroclaw
 cli-gateway-restart-hint-launchd = launchctl kickstart -k <your-zeroclaw-label>
 cli-gateway-restart-hint-process = `zeroclaw daemon` プロセスを再起動してください
-cli-daemon-gateway-already-running = ZeroClaw ゲートウェイは既に {$host}:{$port} で実行中です。デーモンは自身のゲートウェイを監視しており、同じアドレスで2つ目を開始しません。そのゲートウェイを停止するか、`zeroclaw config set gateway.port <port>` でデーモンを空きポートに向けてから、もう一度デーモンを実行してください。
+cli-daemon-gateway-already-running = Airis ゲートウェイは既に {$host}:{$port} で実行中です。デーモンは自身のゲートウェイを監視しており、同じアドレスで2つ目を開始しません。そのゲートウェイを停止するか、`zeroclaw config set gateway.port <port>` でデーモンを空きポートに向けてから、もう一度デーモンを実行してください。
 cli-daemon-gateway-port-occupied = ゲートウェイアドレス {$host}:{$port} は別のプロセスで既に使用されています。ポートを解放するか、デーモンを空きポートに向けて (`zeroclaw config set gateway.port <port>`)、もう一度デーモンを実行してください。
-cli-daemon-starting-title = 🧠 ZeroClaw デーモンを起動しています…
+cli-daemon-starting-title = 🧠 Airis デーモンを起動しています…
 cli-daemon-starting-detail = 設定済みのデーモンエンドポイントを準備しています
-cli-daemon-started-title = 🧠 ZeroClaw デーモンの準備ができました
+cli-daemon-started-title = 🧠 Airis デーモンの準備ができました
 cli-daemon-started-gateway = ゲートウェイ: {$url}
 cli-daemon-started-socket = ソケット:     {$path}
 cli-daemon-started-pairing = ペアリング: 有効（現在の状態は上のゲートウェイ出力を確認してください）
