@@ -18655,7 +18655,6 @@ pub struct SandboxConfig {
     /// Custom Firejail arguments (when backend = firejail)
     #[serde(default)]
     pub firejail_args: Vec<String>,
-
 }
 
 impl Default for SandboxConfig {
