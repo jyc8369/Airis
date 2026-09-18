@@ -81,7 +81,7 @@ fn alias_base_path(alias: &str) -> String {
     format!("/a2a/{alias}")
 }
 
-/// Build the ZeroClaw discovery catalog card served at the origin root. Lists
+/// Build the Airis discovery catalog card served at the origin root. Lists
 /// every published alias as a skill-less entry pointing at its per-alias card
 /// and endpoint. This is a catalog, not a runnable agent: it advertises the
 /// `catalog` interface and carries no skills of its own.
@@ -124,9 +124,9 @@ pub(crate) fn build_catalog_card_with_endpoint(
     }
 
     AgentCard {
-        name: "ZeroClaw agents".to_string(),
+        name: "Airis agents".to_string(),
         description: "Discovery catalog enumerating published A2A agents on \
-                      this ZeroClaw install. Not a runnable agent; each entry \
+                      this Airis install. Not a runnable agent; each entry \
                       below serves its own A2A card and endpoint. Skills are \
                       aggregated from the published agents, each tagged with \
                       its owning alias."
