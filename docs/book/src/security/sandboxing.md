@@ -17,10 +17,7 @@ modes remain fail closed. See
 
 `sandbox_enabled = false` (or `sandbox_backend = "none"`) disables the
 profile's additional OS-level sandbox wrapper. Under the native runtime, that
-leaves tools without an OS sandbox. Under `[runtime] kind = "docker"`, the
-Docker runtime remains the container boundary and is reported as
-`docker-runtime`; these settings prevent a second sandbox container from
-wrapping the runtime's own `docker run`. See the canonical
+leaves tools without an OS sandbox. See the canonical
 [Minimal working example](../providers/configuration.md#minimal-working-example)
 for how a risk profile slots into the rest of the config.
 
@@ -30,10 +27,9 @@ for how a risk profile slots into the rest of the config.
 
 | Platform | Preferred order |
 |---|---|
-| Linux | Landlock (kernel 5.13+) → Bubblewrap → Firejail → Docker → none |
-| macOS | Seatbelt (`sandbox-exec`, native) → Docker → none |
-| Windows | AppContainer (experimental) → Docker → none |
-| Any | Docker (if daemon reachable) → none |
+| Linux | Landlock (kernel 5.13+) → Firejail → none |
+| macOS | Bubblewrap (when enabled) → Seatbelt (`sandbox-exec`, native) → none |
+| Windows | none |
 
 To force a specific backend, set `sandbox_backend` to one of the literal values listed above.
 
@@ -54,7 +50,6 @@ By default, sandboxed tools have full network egress but no inbound listening. P
 
 - Landlock does not control network, it is filesystem-only.
 - Bubblewrap and Firejail can block network when configured.
-- Docker container network mode follows `[runtime.docker].network` when `[runtime].kind = "docker"`.
 
 Tool-specific network gates (browser, HTTP, web_fetch) live on those tools' own config blocks (`[browser].allowed_domains`, `[http_request].allowed_domains`, `[web_fetch].allowed_domains`).
 
@@ -66,7 +61,7 @@ The sandbox passes through only the env vars listed in `[risk_profiles.<alias>].
 
 ### Process limits
 
-Per-tool wall-time timeouts live on the tool's own config block (`[shell_tool].timeout_secs`, etc.). Docker-specific limits (memory, CPU) live on `[runtime.docker]` when the agent's runtime kind is set to `docker`:
+Per-tool wall-time timeouts live on the tool's own config block (`[shell_tool].timeout_secs`, etc.).
 
 ### Shell binary
 
@@ -96,9 +91,9 @@ The same runtime selection is reported to the model. The system prompt's `## Run
 
 PowerShell policy accepts a bounded grammar: simple command invocations, plain or quoted arguments, and pipelines. Simple variable reads such as `$PSHOME` and `$PSVersionTable.PSVersion` are limited to a standalone `Write-Output`/`echo` command so they cannot hide filesystem paths from later commands. Expressions and alternate invocation forms, including subexpressions, parentheses, script blocks, type literals/static method calls, call operators, redirection, statement separators, backtick escapes, scoped variables such as `$env:NAME`, PowerShell provider paths, direct script execution, and nested command interpreters, are classified as high risk. PowerShell-only command names are not added to the cross-dialect default allowlist; add the cmdlets you need to `allowed_commands`, or opt into `"*"` with the corresponding approval and high-risk settings. Known mutation cmdlets follow the medium/high-risk approval gates; unknown bare commands and `Verb-Noun` cmdlets are high risk by default.
 
-Cron shell jobs inherit the global runtime boundary at both validation and execution time. Native jobs use the configured native shell, while Docker jobs run through the configured image, mount, network, CPU, memory, and read-only-root settings. A cron row stores the command, not a copied runtime or dialect. After a daemon reload recreates the scheduler and tool registry, existing jobs therefore use the newly loaded `[runtime]` configuration on their next run. Scheduled cron runs are revalidated and are never pre-approved.
+Cron shell jobs inherit the global runtime boundary at both validation and execution time. A cron row stores the command, not a copied runtime or dialect. After a daemon reload recreates the scheduler and tool registry, existing jobs therefore use the newly loaded `[runtime]` configuration on their next run. Scheduled cron runs are revalidated and are never pre-approved.
 
-Only applies to the native runtime kind. Docker uses its container's shell, and Android (always `/system/bin/sh`) ignores the setting and does not validate it.
+Only applies to the native runtime kind. Android (always `/system/bin/sh`) ignores the setting and does not validate it.
 
 ## Per-backend notes
 
@@ -153,27 +148,11 @@ sudo apt install firejail
 
 Firejail's default profile is fairly permissive; ZeroClaw applies a custom profile. Pass extra args with `firejail_args` on the risk profile.
 
-### Docker
-
-Works anywhere Docker does. The Docker runtime kind (`[runtime] kind = "docker"`) runs each shell invocation in an ephemeral container; see the `[runtime.docker]` block above for image and resource controls.
-
-<div class="os-tabs-src">
-
-#### sh
-
-```sh
-docker build -t zeroclaw-sandbox:local dev/sandbox/   # build the bundled toolkit image
-```
-
-</div>
-
-Pros: strong isolation, works on any OS. Cons: per-invocation container startup cost (100–500 ms). Best for production deployments where the overhead is acceptable.
-
 ### Seatbelt (macOS)
 
 Native macOS sandbox (`sandbox-exec`). Profiles are SBPL: ZeroClaw bundles one for tool runs. Works on macOS 10.11+.
 
-Limitation: some CLI tools (older `git`, some Homebrew-linked binaries) don't cooperate with Seatbelt's file-access rules. If you see "Operation not permitted" errors from the agent's shell calls on macOS, the tool needs broader filesystem access: consider switching to Docker.
+Limitation: some CLI tools (older `git`, some Homebrew-linked binaries) don't cooperate with Seatbelt's file-access rules. If you see "Operation not permitted" errors from the agent's shell calls on macOS, the tool needs broader filesystem access; adjust the policy or choose another supported sandbox backend.
 
 ### `none`
 
@@ -182,11 +161,10 @@ No sandboxing. Tools run with the full privileges of the ZeroClaw service user. 
 ## Troubleshooting
 
 - **"Sandbox backend unavailable"** on startup: check `zeroclaw service status` and the journal; the auto-detect logs which backends it tried.
-- **Tools working on dev, failing in service**: the service user often differs from the CLI user. Verify both have whatever sandbox-adjacent permissions are needed (Landlock: nothing; Bubblewrap: userns enabled; Docker: service user in `docker` group).
-- **Slow tool invocations** on the Docker runtime: first invocation pulls the image, subsequent are fast. Pre-pull with `docker pull <image>`.
+- **Tools working on dev, failing in service**: the service user often differs from the CLI user. Verify both have whatever sandbox-adjacent permissions are needed (Landlock: nothing; Bubblewrap: user namespaces enabled).
 
 ## Code reference
 
 - Detection: `crates/zeroclaw-runtime/src/security/detect.rs`
 - Backends: `crates/zeroclaw-runtime/src/security/sandbox/` (one file per backend)
-- Schema: `RiskProfileConfig` and `DockerRuntimeConfig` in `crates/zeroclaw-config/src/schema.rs`
+- Schema: `RiskProfileConfig` and `RuntimeConfig` in `crates/zeroclaw-config/src/schema.rs`
