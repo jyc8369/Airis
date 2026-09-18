@@ -1289,7 +1289,7 @@ Examples:
 
     /// Show system status (full details)
     Status {
-        /// Output format: "exit-code" exits 0 if healthy, 1 otherwise (for Docker HEALTHCHECK)
+        /// Output format: "exit-code" exits 0 if healthy, 1 otherwise (for automation)
         #[arg(long)]
         format: Option<String>,
     },
@@ -6555,7 +6555,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
 
         Commands::Status { format } => {
             if format.as_deref() == Some("exit-code") {
-                // Lightweight health probe for Docker HEALTHCHECK
+                // Lightweight health probe for automation and service monitors
                 let port = config.gateway.port;
                 let host = if config.gateway.host == "[::]" || config.gateway.host == "0.0.0.0" {
                     "127.0.0.1"
