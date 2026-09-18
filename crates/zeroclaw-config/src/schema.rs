@@ -13239,13 +13239,6 @@ impl RiskProfileConfig {
             enabled: self.sandbox_enabled,
             backend,
             firejail_args: self.firejail_args.clone(),
-            image: self
-                .sandbox_image
-                .as_deref()
-                .map(str::trim)
-                .filter(|s| !s.is_empty())
-                .map(str::to_string)
-                .unwrap_or_else(default_sandbox_image),
         }
     }
 }
@@ -13256,7 +13249,6 @@ fn parse_sandbox_backend(name: &str) -> SandboxBackend {
         "landlock" => SandboxBackend::Landlock,
         "firejail" => SandboxBackend::Firejail,
         "bubblewrap" => SandboxBackend::Bubblewrap,
-        "docker" => SandboxBackend::Docker,
         "sandbox-exec" | "sandboxexec" | "seatbelt" => SandboxBackend::SandboxExec,
         "none" => SandboxBackend::None,
         _ => SandboxBackend::default(),
@@ -13644,11 +13636,6 @@ pub struct RiskProfileConfig {
     pub sandbox_backend: Option<String>,
     /// Extra arguments forwarded to firejail when sandbox_backend = "firejail".
     pub firejail_args: Vec<String>,
-    /// Container image the docker sandbox runs commands in when
-    /// `sandbox_backend = "docker"`. `None` inherits the built-in default.
-    /// Set this to pin a digest or a specific tag so the sandbox stops
-    /// tracking whatever the default tag moves to.
-    pub sandbox_image: Option<String>,
 }
 
 impl Default for RiskProfileConfig {
@@ -13672,7 +13659,6 @@ impl Default for RiskProfileConfig {
             sandbox_enabled: None,
             sandbox_backend: None,
             firejail_args: Vec::new(),
-            sandbox_image: None,
         }
     }
 }
@@ -13871,7 +13857,6 @@ pub struct McpBundleConfig {
 pub enum RuntimeKind {
     #[default]
     Native,
-    Docker,
     Cloudflare,
 }
 
@@ -13880,7 +13865,6 @@ impl RuntimeKind {
     pub fn as_wire(self) -> &'static str {
         match self {
             Self::Native => "native",
-            Self::Docker => "docker",
             Self::Cloudflare => "cloudflare",
         }
     }
@@ -13891,14 +13875,9 @@ impl RuntimeKind {
 #[cfg_attr(feature = "schema-export", derive(schemars::JsonSchema))]
 #[prefix = "runtime"]
 pub struct RuntimeConfig {
-    /// Runtime kind: native | docker | cloudflare.
+    /// Runtime kind: native | cloudflare.
     #[serde(default, deserialize_with = "deserialize_enum_lenient")]
     pub kind: RuntimeKind,
-
-    /// Docker runtime settings (used when `kind = "docker"`).
-    #[serde(default)]
-    #[nested]
-    pub docker: DockerRuntimeConfig,
 
     /// Shell binary the native runtime uses for command execution.
     ///
@@ -13962,73 +13941,6 @@ pub struct RuntimeConfig {
     /// Optional reasoning effort for model_providers that expose a level control.
     #[serde(default, deserialize_with = "deserialize_reasoning_effort_opt")]
     pub reasoning_effort: Option<String>,
-}
-
-/// Docker runtime configuration (`[runtime.docker]` section).
-#[derive(Debug, Clone, Serialize, Deserialize, Configurable)]
-#[cfg_attr(feature = "schema-export", derive(schemars::JsonSchema))]
-#[prefix = "runtime.docker"]
-pub struct DockerRuntimeConfig {
-    /// Runtime image used to execute shell commands.
-    #[serde(default = "default_docker_image")]
-    pub image: String,
-
-    /// Docker network mode (`none`, `bridge`, etc.).
-    #[serde(default = "default_docker_network")]
-    pub network: String,
-
-    /// Optional memory limit in MB (`None` = no explicit limit).
-    #[serde(default = "default_docker_memory_limit_mb")]
-    pub memory_limit_mb: Option<u64>,
-
-    /// Optional CPU limit (`None` = no explicit limit).
-    #[serde(default = "default_docker_cpu_limit")]
-    pub cpu_limit: Option<f64>,
-
-    /// Mount root filesystem as read-only.
-    #[serde(default = "default_true")]
-    pub read_only_rootfs: bool,
-
-    /// Mount configured workspace into `/workspace`.
-    ///
-    /// When enabled, the workspace must exist and canonicalize before Docker
-    /// command construction.
-    #[serde(default = "default_true")]
-    pub mount_workspace: bool,
-
-    /// Optional workspace root allowlist for fail-closed Docker mount validation: when `mount_workspace` is enabled, the workspace must exist and canonicalize even when this list is empty; every configured root must also exist and canonicalize; one invalid entry rejects the command before Docker starts; an empty list permits any canonical workspace.
-    #[serde(default)]
-    pub allowed_workspace_roots: Vec<String>,
-}
-
-fn default_docker_image() -> String {
-    "alpine:3.20".into()
-}
-
-fn default_docker_network() -> String {
-    "none".into()
-}
-
-fn default_docker_memory_limit_mb() -> Option<u64> {
-    Some(512)
-}
-
-fn default_docker_cpu_limit() -> Option<f64> {
-    Some(1.0)
-}
-
-impl Default for DockerRuntimeConfig {
-    fn default() -> Self {
-        Self {
-            image: default_docker_image(),
-            network: default_docker_network(),
-            memory_limit_mb: default_docker_memory_limit_mb(),
-            cpu_limit: default_docker_cpu_limit(),
-            read_only_rootfs: true,
-            mount_workspace: true,
-            allowed_workspace_roots: Vec::new(),
-        }
-    }
 }
 
 // ── Reliability / supervision ────────────────────────────────────
@@ -18744,22 +18656,6 @@ pub struct SandboxConfig {
     #[serde(default)]
     pub firejail_args: Vec<String>,
 
-    /// Container image the Docker sandbox runs commands in (when backend =
-    /// docker). Pin a digest or a specific tag if you need the sandbox to stop
-    /// tracking upstream changes to the default tag.
-    #[serde(default = "default_sandbox_image")]
-    pub image: String,
-}
-
-/// Default container image for the Docker sandbox backend.
-///
-/// The single source for this value: the serde default below and
-/// `DockerSandbox`'s own default both read it, so a change here cannot leave
-/// one path on a stale image.
-pub const DEFAULT_SANDBOX_IMAGE: &str = "alpine:latest";
-
-fn default_sandbox_image() -> String {
-    DEFAULT_SANDBOX_IMAGE.to_string()
 }
 
 impl Default for SandboxConfig {
@@ -18768,7 +18664,6 @@ impl Default for SandboxConfig {
             enabled: None, // Auto-detect
             backend: SandboxBackend::Auto,
             firejail_args: Vec::new(),
-            image: default_sandbox_image(),
         }
     }
 }
@@ -18787,8 +18682,6 @@ pub enum SandboxBackend {
     Firejail,
     /// Bubblewrap (user namespaces)
     Bubblewrap,
-    /// Docker container isolation
-    Docker,
     /// macOS sandbox-exec (Seatbelt)
     #[serde(alias = "sandbox-exec")]
     SandboxExec,
@@ -29322,8 +29215,6 @@ log_tool_io = "off"
 
     #[test]
     async fn runtime_kind_unknown_falls_back_to_default() {
-        let docker: RuntimeConfig = toml::from_str("kind = \"docker\"").unwrap();
-        assert_eq!(docker.kind, RuntimeKind::Docker);
         let cf: RuntimeConfig = toml::from_str("kind = \"cloudflare\"").unwrap();
         assert_eq!(cf.kind, RuntimeKind::Cloudflare);
         let bogus: RuntimeConfig = toml::from_str("kind = \"bogus\"").unwrap();
@@ -29382,12 +29273,6 @@ log_tool_io = "off"
     async fn runtime_config_default() {
         let r = RuntimeConfig::default();
         assert_eq!(r.kind, RuntimeKind::Native);
-        assert_eq!(r.docker.image, "alpine:3.20");
-        assert_eq!(r.docker.network, "none");
-        assert_eq!(r.docker.memory_limit_mb, Some(512));
-        assert_eq!(r.docker.cpu_limit, Some(1.0));
-        assert!(r.docker.read_only_rootfs);
-        assert!(r.docker.mount_workspace);
     }
 
     #[test]
@@ -29881,7 +29766,7 @@ auto_save = true
             security: SecurityConfig::default(),
             security_ops: SecurityOpsConfig::default(),
             runtime: RuntimeConfig {
-                kind: RuntimeKind::Docker,
+                kind: RuntimeKind::Native,
                 ..RuntimeConfig::default()
             },
             reliability: ReliabilityConfig::default(),
@@ -30044,7 +29929,7 @@ auto_save = true
         let default_profile = parsed.risk_profiles.get("default").unwrap();
         assert_eq!(default_profile.level, AutonomyLevel::Full);
         assert!(!default_profile.workspace_only);
-        assert_eq!(parsed.runtime.kind, RuntimeKind::Docker);
+        assert_eq!(parsed.runtime.kind, RuntimeKind::Native);
         assert!(parsed.heartbeat.enabled);
         assert_eq!(parsed.heartbeat.interval_minutes, 15);
         assert_eq!(
@@ -30514,58 +30399,6 @@ reasoning_effort = "HIGH"
 
         let parsed: Config = toml::from_str(raw).unwrap();
         assert_eq!(parsed.runtime.reasoning_effort.as_deref(), Some("high"));
-    }
-
-    #[test]
-    async fn sandbox_image_defaults_to_the_shared_constant() {
-        // The default has to come from one place; a second literal anywhere is
-        // how the docs and the sandbox drifted apart before.
-        assert_eq!(SandboxConfig::default().image, DEFAULT_SANDBOX_IMAGE);
-        assert_eq!(DEFAULT_SANDBOX_IMAGE, "alpine:latest");
-    }
-
-    #[test]
-    async fn sandbox_image_is_configurable() {
-        // The sandbox is configured per risk profile, not under a
-        // `[security.sandbox]` table: `SandboxConfig` is a runtime view that
-        // `sandbox_config()` assembles from these flat keys.
-        let raw = r#"
-[risk_profiles.custom]
-sandbox_backend = "docker"
-sandbox_image = "alpine:3.20"
-"#;
-        let cfg = toml::from_str::<Config>(raw).expect("config with a sandbox image should parse");
-        let profile = cfg
-            .risk_profiles
-            .get("custom")
-            .expect("the custom profile should deserialize");
-        assert_eq!(profile.sandbox_image.as_deref(), Some("alpine:3.20"));
-        assert_eq!(profile.sandbox_config().image, "alpine:3.20");
-    }
-
-    #[test]
-    async fn sandbox_image_absent_falls_back_to_the_default() {
-        let raw = r#"
-[risk_profiles.custom]
-sandbox_backend = "docker"
-"#;
-        let cfg = toml::from_str::<Config>(raw).expect("config without an image should parse");
-        let profile = cfg.risk_profiles.get("custom").expect("profile");
-        assert_eq!(profile.sandbox_image, None);
-        assert_eq!(profile.sandbox_config().image, DEFAULT_SANDBOX_IMAGE);
-    }
-
-    #[test]
-    async fn sandbox_image_blank_is_treated_as_unset() {
-        // An empty or whitespace value must not hand Docker an empty image
-        // name; it falls back the same way an absent key does.
-        let raw = r#"
-[risk_profiles.custom]
-sandbox_image = "   "
-"#;
-        let cfg = toml::from_str::<Config>(raw).expect("config should parse");
-        let profile = cfg.risk_profiles.get("custom").expect("profile");
-        assert_eq!(profile.sandbox_config().image, DEFAULT_SANDBOX_IMAGE);
     }
 
     #[tokio::test]
@@ -38288,61 +38121,6 @@ url = "http://localhost:8080/mcp"
         assert_eq!(from_toml.loop_detection_window_size, 20);
         assert_eq!(from_toml.loop_detection_max_repeats, 3);
         assert_eq!(from_toml.loop_detection_no_progress_min_calls, 5);
-    }
-
-    // ── Docker baked config template ────────────────────────────
-
-    /// The TOML template baked into Docker images (Dockerfile + Dockerfile.debian).
-    /// Kept here so changes to the Dockerfiles can be validated by `cargo test`.
-    const DOCKER_CONFIG_TEMPLATE: &str = r#"
-schema_version = 3
-workspace_dir = "/zeroclaw-data/workspace"
-config_path = "/zeroclaw-data/.zeroclaw/config.toml"
-api_key = ""
-default_model_provider = "openrouter"
-default_model = "anthropic/claude-sonnet-4-20250514"
-default_temperature = 0.7
-
-[gateway]
-port = 42617
-host = "[::]"
-allow_public_bind = true
-
-[risk_profiles.default]
-level = "supervised"
-auto_approve = ["file_read", "file_write", "file_edit", "memory_recall", "memory_store", "web_search_tool", "web_fetch", "calculator", "glob_search", "content_search", "image_info", "weather", "git_operations"]
-"#;
-
-    #[test]
-    async fn docker_config_template_is_parseable() {
-        let cfg: Config = toml::from_str(DOCKER_CONFIG_TEMPLATE)
-            .expect("Docker baked config.toml must be valid TOML that deserialises into Config");
-
-        let auto = &cfg
-            .risk_profiles
-            .get("default")
-            .expect("Docker config must define [risk_profiles.default]")
-            .auto_approve;
-        for tool in &[
-            "file_read",
-            "file_write",
-            "file_edit",
-            "memory_recall",
-            "memory_store",
-            "web_search_tool",
-            "web_fetch",
-            "calculator",
-            "glob_search",
-            "content_search",
-            "image_info",
-            "weather",
-            "git_operations",
-        ] {
-            assert!(
-                auto.iter().any(|t| t == tool),
-                "Docker config risk_profiles.default.auto_approve missing expected tool: {tool}"
-            );
-        }
     }
 
     #[test]
