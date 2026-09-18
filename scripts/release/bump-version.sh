@@ -144,10 +144,6 @@ bump "marketplace/dokploy/meta-entry.json" \
   '"version": "[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]*)?"' \
   "\"version\": \"${VERSION}\""
 
-bump "marketplace/dokploy/blueprints/zeroclaw/docker-compose.yml" \
-  'ghcr\.io/zeroclaw-labs/zeroclaw:[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]*)?' \
-  "ghcr.io/zeroclaw-labs/zeroclaw:${VERSION}"
-
 # ── Marketplace: EasyPanel ─────────────────────────────────────────
 bump "marketplace/easypanel/meta.yaml" \
   'ghcr\.io/zeroclaw-labs/zeroclaw:[0-9]+\.[0-9]+\.[0-9]+([.-][0-9A-Za-z.-]*)?' \
@@ -240,9 +236,8 @@ fi
 # After the workspace version is bumped, regenerate every spec-driven install
 # surface so version and feature sets stay canonical. This OWNS the version and
 # feature content of setup.bat, dist/aur/PKGBUILD, dist/scoop/zeroclaw.json,
-# flake.nix, the Dockerfiles/Containerfile feature sets, and
-# dev/ci/docker-tags.toml. No per-file sed hacks for those. CI's Installer
-# Drift gate fails if this is skipped.
+# and flake.nix. No per-file sed hacks for those. CI's Installer Drift gate
+# fails if this is skipped.
 echo "Generated install surfaces (cargo generate installers)..."
 if command -v cargo >/dev/null 2>&1; then
   ( cd "$REPO_ROOT" && cargo generate installers ) \
