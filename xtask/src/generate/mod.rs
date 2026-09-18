@@ -83,7 +83,6 @@ fn registry() -> Vec<Surface> {
             file: "docs/book/src/setup/windows.md",
             render: docs::render_windows_guide,
         },
-
         Surface {
             name: "pkgbuild",
             file: "dist/aur/PKGBUILD",
@@ -104,7 +103,6 @@ fn registry() -> Vec<Surface> {
             file: "flake.nix",
             render: |root, cur| flake::render_file(root, cur),
         },
-
         Surface {
             name: "zerocode-themes",
             file: "apps/zerocode/src/generated_themes.rs",
