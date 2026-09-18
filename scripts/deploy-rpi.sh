@@ -1,15 +1,10 @@
 #!/usr/bin/env bash
 # deploy-rpi.sh — cross-compile ZeroClaw for Raspberry Pi and deploy via SSH.
 #
-# Cross-compilation (pick ONE — the script auto-detects):
-#
-#   Option A — cargo-zigbuild (recommended; works on Apple Silicon + Intel, no Docker)
-#     brew install zig
-#     cargo install cargo-zigbuild
-#     rustup target add aarch64-unknown-linux-gnu
-#
-#   Option B — cross (Docker-based; requires Docker Desktop running)
-#     cargo install cross
+# Cross-compilation uses cargo-zigbuild:
+#   brew install zig
+#   cargo install cargo-zigbuild
+#   rustup target add aarch64-unknown-linux-gnu
 #
 # Usage:
 #   RPI_HOST=raspberrypi.local RPI_USER=pi ./scripts/deploy-rpi.sh
@@ -20,7 +15,6 @@
 #   RPI_PORT        — SSH port                        (default: 22)
 #   RPI_DIR         — remote deployment dir           (default: /home/$RPI_USER/zeroclaw)
 #   RPI_PASS        — SSH password (uses sshpass)     (default: prompt interactively)
-#   CROSS_TOOL      — force "zigbuild" or "cross"     (default: auto-detect)
 
 set -euo pipefail
 
@@ -53,71 +47,22 @@ echo "    Features: ${FEATURES}"
 echo "    Target host: ${RPI_USER}@${RPI_HOST}:${RPI_PORT}"
 echo ""
 
-# ── 1. Cross-compile — auto-detect best available tool ───────────────────────
-# Prefer cargo-zigbuild: it works on Apple Silicon without Docker and avoids
-# the rustup-toolchain-install errors that affect cross v0.2.x on arm64 Macs.
-_detect_cross_tool() {
-  if [[ "${CROSS_TOOL:-}" == "cross" ]]; then
-    echo "cross"; return
-  fi
-  if [[ "${CROSS_TOOL:-}" == "zigbuild" ]]; then
-    echo "zigbuild"; return
-  fi
-  if command -v cargo-zigbuild &>/dev/null && command -v zig &>/dev/null; then
-    echo "zigbuild"; return
-  fi
-  if command -v cross &>/dev/null; then
-    echo "cross"; return
-  fi
-  echo "none"
-}
+# ── 1. Cross-compile with cargo-zigbuild ──────────────────────────────────────
+if ! command -v cargo-zigbuild &>/dev/null || ! command -v zig &>/dev/null; then
+  echo ""
+  echo "ERROR: cargo-zigbuild and Zig are required."
+  echo "  brew install zig"
+  echo "  cargo install cargo-zigbuild"
+  echo "  rustup target add ${TARGET}"
+  exit 1
+fi
 
-TOOL=$(_detect_cross_tool)
-
-case "${TOOL}" in
-  zigbuild)
-    echo "==> Using cargo-zigbuild (Zig cross-linker)"
-    # Ensure the target sysroot is registered with rustup.
-    rustup target add "${TARGET}" 2>/dev/null || true
-    cargo zigbuild \
-      --target "${TARGET}" \
-      --features "${FEATURES}" \
-      --release
-    ;;
-  cross)
-    echo "==> Using cross (Docker-based)"
-    # Verify Docker is running before handing off — gives a clear error message
-    # instead of the confusing rustup-toolchain failure from cross v0.2.x.
-    if ! docker info &>/dev/null; then
-      echo ""
-      echo "ERROR: Docker is not running."
-      echo "  Start Docker Desktop and retry, or install cargo-zigbuild instead:"
-      echo "    brew install zig && cargo install cargo-zigbuild"
-      echo "    rustup target add ${TARGET}"
-      exit 1
-    fi
-    cross build \
-      --target "${TARGET}" \
-      --features "${FEATURES}" \
-      --release
-    ;;
-  none)
-    echo ""
-    echo "ERROR: No cross-compilation tool found."
-    echo ""
-    echo "Install one of the following and retry:"
-    echo ""
-    echo "  Option A — cargo-zigbuild (recommended; works on Apple Silicon, no Docker):"
-    echo "    brew install zig"
-    echo "    cargo install cargo-zigbuild"
-    echo "    rustup target add ${TARGET}"
-    echo ""
-    echo "  Option B — cross (requires Docker Desktop running):"
-    echo "    cargo install cross"
-    echo ""
-    exit 1
-    ;;
-esac
+echo "==> Using cargo-zigbuild (Zig cross-linker)"
+rustup target add "${TARGET}" 2>/dev/null || true
+cargo zigbuild \
+  --target "${TARGET}" \
+  --features "${FEATURES}" \
+  --release
 
 echo ""
 echo "==> Build complete: ${BINARY}"

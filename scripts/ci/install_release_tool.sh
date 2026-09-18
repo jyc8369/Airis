@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   cat <<'EOF'
-Usage: scripts/ci/install_release_tool.sh <cross|tauri-cli> [--print-manifest]
+Usage: scripts/ci/install_release_tool.sh <tauri-cli> [--print-manifest]
 
 Installs a SHA-256-pinned release binary into Cargo's bin directory. The
 --print-manifest mode resolves the runner-specific asset without downloading it
@@ -88,20 +88,6 @@ os="$(normalize_os)"
 arch="$(normalize_arch)"
 
 case "$tool" in
-  cross)
-    version="0.2.5"
-    tag="v${version}"
-    repository="cross-rs/cross"
-    primary_binary="cross"
-    binaries=("cross" "cross-util")
-    case "${os}/${arch}" in
-      linux/x86_64)
-        asset="cross-x86_64-unknown-linux-gnu.tar.gz"
-        sha256="642375d1bcf3bd88272c32ba90e999f3d983050adf45e66bd2d3887e8e838bad"
-        ;;
-      *) die "cross ${version} is not pinned for ${os}/${arch}" ;;
-    esac
-    ;;
   tauri-cli)
     version="2.11.4"
     tag="tauri-cli-v${version}"

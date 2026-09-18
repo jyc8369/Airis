@@ -1,7 +1,5 @@
-pub mod docker;
 pub mod native;
 
-pub use docker::DockerRuntime;
 pub use native::NativeRuntime;
 pub use zeroclaw_api::runtime_traits::{RuntimeAdapter, ShellDialect, ShellProfile};
 
@@ -17,7 +15,6 @@ pub fn create_runtime(config: &RuntimeConfig) -> anyhow::Result<Box<dyn RuntimeA
             validate_shell_windows(&shell)?;
             Ok(Box::new(NativeRuntime::with_shell(shell)))
         }
-        RuntimeKind::Docker => Ok(Box::new(DockerRuntime::new(config.docker.clone()))),
         RuntimeKind::Cloudflare => anyhow::bail!(
             "runtime.kind='cloudflare' is not implemented yet. Use runtime.kind='native' for now."
         ),
@@ -138,17 +135,6 @@ mod tests {
         };
         let rt = create_runtime(&cfg).unwrap();
         assert_eq!(rt.name(), "native");
-        assert!(rt.has_shell_access());
-    }
-
-    #[test]
-    fn factory_docker() {
-        let cfg = RuntimeConfig {
-            kind: RuntimeKind::Docker,
-            ..RuntimeConfig::default()
-        };
-        let rt = create_runtime(&cfg).unwrap();
-        assert_eq!(rt.name(), "docker");
         assert!(rt.has_shell_access());
     }
 

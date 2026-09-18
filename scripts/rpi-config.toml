@@ -248,15 +248,6 @@ approved_domains = []
 [runtime]
 kind = "native"
 
-[runtime.docker]
-image = "alpine:3.20"
-network = "none"
-memory_limit_mb = 512
-cpu_limit = 1.0
-read_only_rootfs = true
-mount_workspace = true
-allowed_workspace_roots = []
-
 [runtime.wasm]
 tools_dir = "tools/wasm"
 fuel_limit = 1000000

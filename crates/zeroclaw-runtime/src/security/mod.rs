@@ -6,7 +6,6 @@ pub mod auth_provider;
 pub mod bubblewrap;
 pub mod cert_ledger;
 pub mod detect;
-pub mod docker;
 
 // Prompt injection defense (contributed from RustyClaw, MIT licensed)
 pub mod domain_matcher;
@@ -38,7 +37,6 @@ pub mod webauthn;
 pub use audit::{AuditEvent, AuditEventType, AuditLogger};
 #[allow(unused_imports)]
 pub use detect::create_sandbox;
-pub use detect::linux_memcg_available;
 pub use detect::{SandboxExtraRoots, SandboxPosture, sandbox_posture};
 pub use domain_matcher::DomainMatcher;
 #[allow(unused_imports)]

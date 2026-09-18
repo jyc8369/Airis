@@ -263,7 +263,7 @@ Set `uri` when ZeroClaw is not running on the same host as Ollama:
 ```toml
 [providers.models.ollama.host]
 model = "llama3.1"
-uri = "http://host.docker.internal:11434"
+uri = "http://192.168.1.20:11434"
 ```
 
 Ollama-specific optional fields are `num_ctx`, `num_predict`, and `temperature_override`.

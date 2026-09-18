@@ -251,7 +251,7 @@ ZeroClaw audits skills before loading or installing them. Script-like files such
 
 If you intentionally use script-bearing skills, enable `skills.allow_scripts`. Keep this disabled unless you trust the skill source and have reviewed what the scripts do.
 
-For Python-specific execution patterns, interpreter policy, and native versus Docker trade-offs, see [Running Python skills](./python-skills.md).
+For Python-specific execution patterns and interpreter policy, see [Running Python skills](./python-skills.md).
 
 ## Loading community skills
 

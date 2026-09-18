@@ -376,10 +376,6 @@ pub struct SecurityPolicy {
     /// Extra arguments forwarded to firejail when `sandbox_backend`
     /// resolves to `"firejail"`.
     pub firejail_args: Vec<String>,
-    /// Container image for the docker sandbox backend. `None` inherits the
-    /// built-in default; carried here so status surfaces report the image the
-    /// sandbox will actually run rather than assuming the default.
-    pub sandbox_image: Option<String>,
     pub tracker: PerSenderTracker,
 }
 
@@ -778,7 +774,6 @@ impl Default for SecurityPolicy {
             sandbox_enabled: None,
             sandbox_backend: None,
             firejail_args: vec![],
-            sandbox_image: None,
             tracker: PerSenderTracker::new(),
         }
     }
@@ -2028,7 +2023,7 @@ fn contains_unsafe_output_redirect_for_shell(command: &str, dialect: ShellDialec
     // `>nul.txt`, `>null`) is left intact so only the bare device matches.
     //
     // Gated on the effective shell: only Windows `cmd.exe` resolves `nul` to
-    // the discard-only null device. Under a POSIX shell (Unix native or Docker
+    // the discard-only null device. Under a POSIX shell (POSIX
     // `sh -c`) `nul` is an ordinary relative filename, so
     // `echo x >nul` would create/truncate a workspace file — it must stay
     // flagged as an unsafe file redirect.
@@ -2437,8 +2432,7 @@ fn is_safe_device_redirect_target(target: &str, dialect: ShellDialect) -> bool {
     }
     // Windows null device: `nul`/`NUL` (case-insensitive) and the full `\\.\nul`
     // device form. Only under a native Windows `cmd.exe` shell does `nul` always
-    // resolve to the discard-only null device. Under a POSIX shell (Unix native
-    // or Docker `sh -c`) `nul` is an ordinary relative filename, so it
+    // resolve to the discard-only null device. Under a POSIX shell (POSIX `sh -c`) `nul` is an ordinary relative filename, so it
     // must not be treated as a safe device.
     matches!(dialect, ShellDialect::WindowsCmd)
         && (target.eq_ignore_ascii_case("nul") || target.eq_ignore_ascii_case(r"\\.\nul"))
@@ -2559,7 +2553,7 @@ fn is_allowlist_entry_match(
 
     // Command-name entries continue to match by basename, case-insensitively.
     // Callers lowercase the basename before it reaches here, so folding only
-    // one side would leave an entry written as `Git` or `Docker` unable to
+    // one side would leave an entry written as `Git` or `Kubectl` unable to
     // match anything.
     command_names_equivalent_for_shell(allowed, executable_base, dialect)
 }
@@ -4560,7 +4554,6 @@ impl SecurityPolicy {
             always_ask: risk_profile.always_ask.clone(),
             sandbox_enabled: risk_profile.sandbox_enabled,
             sandbox_backend: risk_profile.sandbox_backend.clone(),
-            sandbox_image: risk_profile.sandbox_image.clone(),
             firejail_args: risk_profile.firejail_args.clone(),
             tracker: PerSenderTracker::new(),
         }
@@ -4927,7 +4920,6 @@ mod tests {
             sandbox_enabled: Some(true),
             sandbox_backend: Some("firejail".into()),
             firejail_args: vec!["--net=none".into()],
-            sandbox_image: None,
         };
 
         let policy = SecurityPolicy::from_profiles(&rp, None, Path::new("/ws"));
@@ -5328,10 +5320,10 @@ mod tests {
     #[test]
     fn custom_allowlist() {
         let p = SecurityPolicy {
-            allowed_commands: vec!["docker".into(), "kubectl".into()],
+            allowed_commands: vec!["cargo".into(), "kubectl".into()],
             ..SecurityPolicy::default()
         };
-        assert!(p.is_command_allowed("docker ps"));
+        assert!(p.is_command_allowed("cargo check"));
         assert!(p.is_command_allowed("kubectl get pods"));
         assert!(!p.is_command_allowed("ls"));
         assert!(!p.is_command_allowed("git status"));
@@ -5343,11 +5335,11 @@ mod tests {
         // comparison, so an entry written with any uppercase could never match
         // until both sides were folded.
         let p = SecurityPolicy {
-            allowed_commands: vec!["Git".into(), "DOCKER".into()],
+            allowed_commands: vec!["Git".into(), "KUBECTL".into()],
             ..SecurityPolicy::default()
         };
         assert!(p.is_command_allowed("git status"));
-        assert!(p.is_command_allowed("docker ps"));
+        assert!(p.is_command_allowed("cargo check"));
         // The invocation may also be capitalized; the basename is folded too.
         assert!(p.is_command_allowed("GIT status"));
         // Entries that are genuinely absent are still refused.
@@ -5735,8 +5727,7 @@ mod tests {
             ..SecurityPolicy::default()
         };
 
-        // Docker executes POSIX `sh` even on a Windows host. Backslashes escape
-        // the next character there, while cmd.exe treats them as path separators.
+        // POSIX `sh` treats backslashes as escapes, while cmd.exe treats them as path separators.
         for command in [r"attacker\git status", "git.exe status"] {
             assert!(
                 p.validate_command_execution_for_shell(command, false, ShellDialect::Posix)
@@ -6780,7 +6771,7 @@ mod tests {
         let risk = crate::schema::RiskProfileConfig {
             level: AutonomyLevel::Full,
             workspace_only: false,
-            allowed_commands: vec!["docker".into()],
+            allowed_commands: vec!["kubectl".into()],
             forbidden_paths: vec!["/secret".into()],
             require_approval_for_medium_risk: false,
             block_high_risk_commands: false,
@@ -6797,7 +6788,7 @@ mod tests {
 
         assert_eq!(policy.autonomy, AutonomyLevel::Full);
         assert!(!policy.workspace_only);
-        assert_eq!(policy.allowed_commands, vec!["docker"]);
+        assert_eq!(policy.allowed_commands, vec!["kubectl"]);
         assert_eq!(policy.forbidden_paths, vec!["/secret"]);
         assert_eq!(policy.max_actions_per_hour, 100);
         assert_eq!(policy.max_cost_per_day_cents, 1000);
@@ -7175,8 +7166,7 @@ mod tests {
     #[test]
     fn windows_nul_redirect_allowed_only_under_cmd_exe() {
         // The Windows null device is a safe discard-only redirect target — but
-        // ONLY under a native Windows `cmd.exe` shell. Under a POSIX shell (Unix
-        // native or Docker `sh -c`) `nul` is an ordinary relative
+        // ONLY under a native Windows `cmd.exe` shell. Under a POSIX shell (POSIX `sh -c`) `nul` is an ordinary relative
         // filename, so `>nul` must stay blocked to prevent a workspace-file write.
         use ShellDialect::{Posix, WindowsCmd};
         let p = SecurityPolicy {
@@ -7892,7 +7882,7 @@ mod tests {
             workspace_only: false,
             ..SecurityPolicy::default()
         };
-        assert!(!p.is_path_allowed(&tp_sys_sub("var/run/docker.sock")));
+        assert!(!p.is_path_allowed(&tp_sys_sub("var/run/service.sock")));
     }
 
     // ── Edge cases: rate limiter boundary ────────────────────
@@ -8042,7 +8032,7 @@ mod tests {
             ..SecurityPolicy::default()
         };
         assert!(p.is_command_allowed("git status"));
-        assert!(!p.is_command_allowed("docker ps"));
+        assert!(!p.is_command_allowed("cargo check"));
     }
 
     #[test]
@@ -9092,11 +9082,11 @@ mod tests {
     #[test]
     fn ensure_no_escalation_accepts_case_equivalent_command_names() {
         let parent = SecurityPolicy {
-            allowed_commands: vec!["Git".into(), "DOCKER".into()],
+            allowed_commands: vec!["Git".into(), "KUBECTL".into()],
             ..parent_policy_for_escalation_tests()
         };
         let child = SecurityPolicy {
-            allowed_commands: vec!["git".into(), "docker".into()],
+            allowed_commands: vec!["git".into(), "kubectl".into()],
             ..parent.clone()
         };
 

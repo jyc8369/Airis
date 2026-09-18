@@ -15,26 +15,15 @@ This directory contains everything needed to cross-compile ZeroClaw and deploy i
 
 ## Prerequisites
 
-### Cross-compilation toolchain (pick one)
+### Cross-compilation toolchain
 
-#### Option A — cargo-zigbuild (recommended for Apple Silicon)
+Use `cargo-zigbuild` for Raspberry Pi cross-compilation:
 
 ```bash
 brew install zig
 cargo install cargo-zigbuild
 rustup target add aarch64-unknown-linux-gnu
 ```
-
-#### Option B — cross (Docker-based)
-
-```bash
-cargo install cross
-rustup target add aarch64-unknown-linux-gnu
-# Docker must be running
-```
-
-The deploy script auto-detects which tool is available, preferring `cargo-zigbuild`.
-Force a specific tool with `CROSS_TOOL=zigbuild` or `CROSS_TOOL=cross`.
 
 ### Optional: passwordless SSH
 
@@ -66,7 +55,6 @@ After the first deploy, you must set your API key on the Pi (see [First-Time Set
 | `RPI_PORT` | `22` | SSH port |
 | `RPI_DIR` | `~/zeroclaw` | Remote directory for the binary and `.env` |
 | `RPI_PASS` | _(unset)_ | SSH password — uses `sshpass` if set; key auth used otherwise |
-| `CROSS_TOOL` | _(auto-detect)_ | Force `zigbuild` or `cross` |
 
 ---
 
@@ -207,14 +195,6 @@ Re-run the deploy script. Confirm the target:
 ```bash
 ssh pi@raspberrypi.local 'file ~/zeroclaw/zeroclaw'
 # Expected: ELF 64-bit LSB pie executable, ARM aarch64
-```
-
-### Force a specific cross-compilation tool
-
-```bash
-CROSS_TOOL=zigbuild RPI_HOST=raspberrypi.local ./scripts/deploy-rpi.sh
-# or
-CROSS_TOOL=cross    RPI_HOST=raspberrypi.local ./scripts/deploy-rpi.sh
 ```
 
 ### Rebuild locally without deploying

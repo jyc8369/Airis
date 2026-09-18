@@ -1289,7 +1289,7 @@ Examples:
 
     /// Show system status (full details)
     Status {
-        /// Output format: "exit-code" exits 0 if healthy, 1 otherwise (for Docker HEALTHCHECK)
+        /// Output format: "exit-code" exits 0 if healthy, 1 otherwise (for automation)
         #[arg(long)]
         format: Option<String>,
     },
@@ -5844,45 +5844,6 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
                 );
             }
 
-            #[cfg(target_os = "linux")]
-            {
-                use zeroclaw_config::schema::SandboxBackend;
-                // Any enabled agent whose risk_profile uses the docker
-                // sandbox triggers the warning — we just need to know
-                // *some* agent is using it.
-                let sandbox_docker = config
-                    .agents
-                    .iter()
-                    .filter(|(_, a)| a.enabled)
-                    .filter_map(|(alias, _)| config.risk_profile_for_agent(alias))
-                    .any(|p| matches!(p.sandbox_config().backend, SandboxBackend::Docker));
-                let runtime_docker_mem = config.runtime.kind
-                    == zeroclaw_config::schema::RuntimeKind::Docker
-                    && config
-                        .runtime
-                        .docker
-                        .memory_limit_mb
-                        .is_some_and(|mb| mb > 0);
-                if (sandbox_docker || runtime_docker_mem)
-                    && !zeroclaw_runtime::security::linux_memcg_available()
-                {
-                    let which = match (sandbox_docker, runtime_docker_mem) {
-                        (true, true) => {
-                            "security.sandbox.backend = \"docker\" and runtime.kind = \"docker\""
-                        }
-                        (true, false) => "security.sandbox.backend = \"docker\"",
-                        _ => "runtime.kind = \"docker\"",
-                    };
-                    ::zeroclaw_log::record!(
-                        WARN,
-                        ::zeroclaw_log::Event::new(module_path!(), ::zeroclaw_log::Action::Note)
-                            .with_outcome(::zeroclaw_log::EventOutcome::Unknown)
-                            .with_attrs(::serde_json::json!({"which": which})),
-                        "Docker memory limits are configured but the Linux kernel has no memcg support. Affected config: . Consequence: --memory limits are silently ignored; agents can OOM the host. Fix: add 'cgroup_memory=1 cgroup_enable=memory' to /boot/firmware/cmdline.txt (Raspberry Pi) or enable CONFIG_MEMCG in your kernel, then reboot."
-                    );
-                }
-            }
-
             // Wire CLI channel for interactive mode
             #[cfg(feature = "agent-runtime")]
             zeroclaw_runtime::agent::loop_::register_cli_channel_fn(Box::new(|| {
@@ -6594,7 +6555,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
 
         Commands::Status { format } => {
             if format.as_deref() == Some("exit-code") {
-                // Lightweight health probe for Docker HEALTHCHECK
+                // Lightweight health probe for automation and service monitors
                 let port = config.gateway.port;
                 let host = if config.gateway.host == "[::]" || config.gateway.host == "0.0.0.0" {
                     "127.0.0.1"

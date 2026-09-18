@@ -313,7 +313,7 @@ journalctl --user -u zeroclaw -n 200 | grep -i imap
 ### "Connection timed out" to Ollama
 
 - Ollama daemon not running: `systemctl status ollama` (Linux), `brew services list` (macOS)
-- Wrong URL in config, from inside a container, `localhost:11434` doesn't reach the host; use `host.docker.internal` or the host's LAN IP
+- Wrong URL in config; if Ollama runs on another host, use that host's LAN IP instead of `localhost:11434`
 - Firewall blocking port 11434, rare locally, common on shared LANs
 
 ### Anthropic / OpenAI 401
@@ -335,12 +335,6 @@ Expected behaviour at `Supervised` autonomy for unknown commands. Either:
 - Raise autonomy to `Full` if you trust the context
 
 See [Security → Autonomy levels](../security/autonomy.md).
-
-### Tool invocations fail inside Docker sandbox
-
-- Container image isn't pulled, run `docker pull <image>` for the image the sandbox uses. That is `sandbox_image` on the active risk profile (`[risk_profiles.<name>].sandbox_image`), or `alpine:latest` when it is unset
-- Docker daemon not reachable from the ZeroClaw user, check `docker info`
-- Tool needs a device that's not passed through, extend `allow_devices`
 
 ### Browser tool hangs on first use
 
