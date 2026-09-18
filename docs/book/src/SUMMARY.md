@@ -28,7 +28,6 @@
   - [Windows](./setup/windows.md)
   - [FreeBSD](./setup/freebsd.md)
   - [NixOS](./setup/nixos.md)
-  - [Docker & containers](./setup/container.md)
   - [Service management](./setup/service.md)
   - [Platform install files](./setup/dist-files.md)
 - [Architecture](./architecture/overview.md)
