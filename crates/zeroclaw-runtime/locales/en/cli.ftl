@@ -35,7 +35,7 @@ cli-auth-about = Manage provider subscription authentication profiles
 cli-hardware-about = Discover and introspect USB hardware
 cli-peripheral-about = Manage hardware peripherals
 cli-memory-about = Manage agent memory entries
-cli-config-about = Manage ZeroClaw configuration
+cli-config-about = Manage Airis configuration
 cli-update-about = Check for and apply ZeroClaw updates
 cli-self-test-about = Run diagnostic self-tests
 cli-completions-about = Generate shell completion scripts
@@ -75,7 +75,7 @@ cli-wechat-scanned-confirm = 👀 Scanned! Confirm on your phone...
 cli-wechat-qr-expired-refreshing = ⏳ QR code expired, refreshing...
 cli-wechat-login-confirmed-missing-field = Login confirmed but {$field} missing.
 cli-wechat-connected = ✅ WeChat connected!
-cli-wechat-bound-success = ✅ WeChat account bound successfully. You can talk to ZeroClaw now.
+cli-wechat-bound-success = ✅ WeChat account bound successfully. You can talk to Airis now.
 cli-wechat-invalid-bind-code = ❌ Invalid bind code. Please try again.
 
 cli-skills-list-about = List all installed skills
@@ -190,7 +190,7 @@ cli-sop-list-about = List loaded SOPs
 cli-sop-validate-about = Validate SOP definitions
 cli-sop-show-about = Show details of an SOP
 
-cli-migrate-openclaw-about = Import memory from an OpenClaw workspace into this ZeroClaw workspace
+cli-migrate-openclaw-about = Import memory from an OpenClaw workspace into this Airis workspace
 cli-migrate-openclaw-qdrant-unsupported = Qdrant is not currently supported as an OpenClaw migration target. Set memory.backend to sqlite, lucid, or markdown and retry.
 
 cli-agent-long-about =
@@ -229,7 +229,7 @@ cli-acp-long-about =
 cli-daemon-long-about =
     Start the long-running autonomous daemon.
 
-    Launches the full ZeroClaw runtime: gateway server, all configured channels (Telegram, Discord, Slack, etc.), heartbeat monitor, and the cron scheduler. This is the recommended way to run ZeroClaw in production or as an always-on assistant.
+    Launches the full Airis runtime: gateway server, all configured channels (Telegram, Discord, Slack, etc.), heartbeat monitor, and the cron scheduler. This is the recommended way to run Airis in production or as an always-on assistant.
 
     Use 'zeroclaw service install' to register the daemon as an OS service (systemd/launchd) for auto-start on boot.
 
@@ -259,7 +259,7 @@ cli-cron-long-about =
 cli-channel-long-about =
     Manage communication channels.
 
-    Add, remove, list, send, and health-check channels that connect ZeroClaw to messaging platforms. Supported channel types: telegram, discord, slack, whatsapp, matrix, imessage, email.
+    Add, remove, list, send, and health-check channels that connect Airis to messaging platforms. Supported channel types: telegram, discord, slack, whatsapp, matrix, imessage, email.
 
     Examples:
       zeroclaw channel list
@@ -304,7 +304,7 @@ cli-memory-long-about =
       zeroclaw memory clear --category conversation --yes
 
 cli-config-long-about =
-    Manage ZeroClaw configuration.
+    Manage Airis configuration.
 
     View, set, or initialize config properties by dotted path. Use 'schema' to dump the full JSON Schema for the config file.
 
@@ -342,7 +342,7 @@ cli-update-long-about =
       zeroclaw update --version 0.6.0      # install specific version
 
 cli-self-test-long-about =
-    Run diagnostic self-tests to verify the ZeroClaw installation.
+    Run diagnostic self-tests to verify the Airis installation.
 
     By default, runs the full test suite including network checks (gateway health, memory round-trip). Use --quick to skip network checks for faster offline validation.
 
@@ -725,7 +725,7 @@ cli-quickstart-complete = Quickstart complete. Created agent `{$alias}`.
 cli-next-steps = Next steps:
 cli-agent-not-created = Your agent was not created — and nothing on disk was changed.
 cli-onboard-deprecated = `zeroclaw onboard` is deprecated — use `zeroclaw quickstart`.
-cli-otp-initialized = Initialized OTP secret for ZeroClaw.
+cli-otp-initialized = Initialized OTP secret for Airis.
 cli-otp-enrollment-uri = Enrollment URI: {$uri}
 cli-otp-received = {"  "}✓ OTP received
 cli-secret-captured = {"  "}● Value captured — press Enter to save
@@ -750,8 +750,8 @@ cli-pairing-rotate-no-code = The rotate request completed without returning a re
 cli-pairing-check-enabled = Check whether pairing is enabled, then request a new device code:
 cli-pairing-inspect = To inspect the running gateway:
 cli-gateway-running-q = {"   "}Is the gateway running? Start it with:
-cli-status-title = 🦀 ZeroClaw Status
-cli-security-status-title = ZeroClaw Security Status
+cli-status-title = Airis Status
+cli-security-status-title = Airis Security Status
 cli-security-status-source = Source:      {$v}
 cli-security-status-agent = Agent:       {$v}
 cli-security-status-agent-enabled = Agent enabled: {$enabled}
@@ -1138,11 +1138,11 @@ cli-gateway-restart-hint-process = restart the `zeroclaw daemon` process
 # (shared event bus / canvas / reload channel) and cannot adopt a separate
 # process, so it fails fast with an actionable message instead of degrading into
 # a supervisor retry loop. The two variants differ only by who holds the port.
-cli-daemon-gateway-already-running = A ZeroClaw gateway is already running on {$host}:{$port}. The daemon supervises its own gateway and will not start a second one on the same address. Stop that gateway (or point the daemon at a free port with `zeroclaw config set gateway.port <port>`), then run the daemon again.
+cli-daemon-gateway-already-running = An Airis gateway is already running on {$host}:{$port}. The daemon supervises its own gateway and will not start a second one on the same address. Stop that gateway (or point the daemon at a free port with `zeroclaw config set gateway.port <port>`), then run the daemon again.
 cli-daemon-gateway-port-occupied = Gateway address {$host}:{$port} is already in use by another process. Free the port or point the daemon at a free port (`zeroclaw config set gateway.port <port>`), then run the daemon again.
-cli-daemon-starting-title = 🧠 ZeroClaw daemon starting…
+cli-daemon-starting-title = Airis daemon starting…
 cli-daemon-starting-detail = Preparing configured daemon endpoints
-cli-daemon-started-title = 🧠 ZeroClaw daemon ready
+cli-daemon-started-title = Airis daemon ready
 cli-daemon-started-gateway = Gateway:  {$url}
 cli-daemon-started-socket = Socket:   {$path}
 cli-daemon-started-pairing = Pairing:    enabled (see gateway output above for current status)
