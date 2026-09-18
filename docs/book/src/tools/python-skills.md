@@ -1,13 +1,16 @@
 # Running Python Skills
 
-ZeroClaw can run Python skills, but realistic Python work usually needs one of two explicit deployment choices:
+ZeroClaw can run Python skills through the host Python environment. For repeatable
+dependencies, prefer a reviewed project-local virtual environment or another setup
+step outside the agent turn.
 
-- run the skill on a trusted host Python environment, or
-- run it inside a custom Docker runtime image that already contains Python and the packages the skill needs.
+The default configuration is intentionally conservative. It blocks many copy-paste
+Python patterns until you explicitly allow the interpreter and choose the sandbox
+policy for the active risk profile.
 
-The default configuration is intentionally conservative. It blocks many copy-paste Python patterns until you decide which trust boundary you want.
-
-This page covers Python scripts invoked through the built-in shell tool. If a `SKILL.toml` defines its own `[[tools]]` entry with `kind = "shell"` or `kind = "script"`, that skill tool currently executes as a host subprocess under shell policy, not through `runtime.kind = "docker"`. For containerized Python execution today, either have the skill instructions call Python scripts through the built-in shell tool, or make the skill tool command explicitly run the container boundary you want.
+This page covers Python scripts invoked through the built-in shell tool. If a
+`SKILL.toml` defines its own `[[tools]]` entry with `kind = "shell"` or
+`kind = "script"`, that skill tool executes as a host subprocess under shell policy.
 
 ## The Three Layers
 
@@ -21,7 +24,7 @@ Python skill execution is controlled by three separate layers.
 
 Python helper files do not require `allow_scripts = true`. Enable shell-like helper files only after you have reviewed the skill source, and allow the interpreter (`python`, `python3`, `pip`) in the risk profile's `allowed_commands`. `allowed_commands` is a strict executable allowlist when it is non-empty. The shell policy still checks destructive patterns and interpreter argument risks on top of that allowlist.
 
-Prefer installing Python packages at image build time, in a reviewed local virtual environment, or in another setup step outside the agent turn. Add `pip` to a trusted profile only when runtime package installation is an intentional part of that deployment.
+Prefer installing Python packages in a reviewed local virtual environment or another setup step outside the agent turn. Add `pip` to a trusted profile only when runtime package installation is an intentional part of that deployment.
 
 ## What Stays Blocked
 
@@ -64,59 +67,14 @@ This is appropriate for local development, a single-user workstation, or a home 
 
 Do not use this pattern for unreviewed third-party skills or multi-tenant deployments.
 
-## Pattern B: Custom Docker Runtime Image
-
-Use Docker when you want Python dependencies to live in a repeatable container image and you still want a runtime boundary around built-in shell execution.
-
-Create an image with the packages your skills need:
-
-```dockerfile
-# Dockerfile.skill-exec
-FROM python:3.12-slim
-
-RUN pip install --no-cache-dir \
-    pandas \
-    polars \
-    requests
-
-WORKDIR /workspace
-```
-
-Build it:
-
-<div class="os-tabs-src">
-
-#### sh
-
-```sh
-docker build -f Dockerfile.skill-exec -t zeroclaw-python-skills:local .
-```
-
-</div>
-
-Point ZeroClaw at the image via `runtime.kind = "docker"`, which runs shell invocations in an ephemeral container. Docker-specific image, network, memory, CPU, read-only rootfs, and workspace mount settings live under `runtime.docker`.
-
-Set `sandbox_backend = "none"` to avoid wrapping the Docker runtime in a second, separate sandbox container. In this pattern the Docker runtime is the execution boundary for built-in shell invocations, and `runtime.docker` is where the image and container limits are configured.
-
-If a skill needs outbound HTTP, change `runtime.docker.network` deliberately. If a skill needs to write package caches, reports, or temporary state outside the mounted workspace, review whether it should instead write under `/workspace`, then relax `read_only_rootfs` only when that is not enough.
-
-## Workspace Mounts
-
-When `runtime.docker.mount_workspace = true`, ZeroClaw mounts the configured workspace at `/workspace` in the container and sets the container workdir there. Skill scripts should use workspace-relative paths whenever possible.
-
-If your workspace path must be constrained further, configure the workspace allowlist. ZeroClaw validates the host workspace path against that allowlist before adding the Docker volume mount.
-
-Mount validation is fail closed. The workspace must exist and resolve to a canonical path even when the allowlist is empty. Every configured allowlist root must also exist and canonicalize; one stale or invalid entry rejects the command before Docker starts, even if another root matches. Remove stale entries or create the intended directories before upgrading.
-
 ## Choosing a Pattern
 
 - Use trusted native Python when you wrote or reviewed the skills and want the lowest latency on a single-user host.
-- Use a custom Docker runtime image when you need repeatable dependencies, production packaging, or an explicit container boundary for built-in shell calls.
-- Use stricter risk profiles, narrower command allowlists, and containerized execution for unreviewed or multi-tenant skill sources.
+- Use a project-local virtual environment and pinned dependencies when you need repeatable Python environments.
+- Use stricter risk profiles, narrower command allowlists, and the supported OS sandbox backends for higher-risk skill sources.
 
 ## See Also
 
 - [Skills](./skills.md)
 - [Autonomy levels](../security/autonomy.md)
 - [Sandboxing](../security/sandboxing.md)
-- [Docker & containers](../setup/container.md)
