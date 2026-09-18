@@ -52,6 +52,12 @@ fn append_project_context(
 ) {
     prompt.push_str("## Project Context\n\n");
 
+    let airis_identity = identity::airis_identity_to_system_prompt(identity_config);
+    if !airis_identity.is_empty() {
+        prompt.push_str(&airis_identity);
+        prompt.push_str("\n\n");
+    }
+
     if let Some(config) = identity_config
         && identity::is_aieos_configured(config)
     {
