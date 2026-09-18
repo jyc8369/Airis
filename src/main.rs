@@ -989,13 +989,13 @@ enum EstopLevelArg {
     ToolFreeze,
 }
 
-/// `ZeroClaw` - Zero overhead. Zero compromise. 100% Rust.
+/// Airis — personal AI assistant runtime.
 #[derive(Parser, Debug)]
 #[command(name = "zeroclaw")]
 #[command(author = "theonlyhennygod")]
 #[command(version)]
 // i18n-exempt: clap derive help — framework requires a compile-time literal
-#[command(about = "The fastest, smallest AI assistant.", long_about = None)]
+#[command(about = "Airis personal AI assistant runtime.", long_about = None)]
 struct Cli {
     #[arg(long, global = true)]
     config_dir: Option<String>,
@@ -1238,9 +1238,9 @@ Examples:
     #[command(long_about = "\
 Start the long-running autonomous daemon.
 
-Launches the full ZeroClaw runtime: gateway server, all configured \
+Launches the full Airis runtime: gateway server, all configured \
 channels (Telegram, Discord, Slack, etc.), heartbeat monitor, and \
-the cron scheduler. This is the recommended way to run ZeroClaw in \
+the cron scheduler. This is the recommended way to run Airis in \
 production or as an always-on assistant.
 
 Use 'zeroclaw service install' to register the daemon as an OS \
@@ -1363,7 +1363,7 @@ Examples:
     #[command(long_about = "\
 Manage communication channels.
 
-Add, remove, list, send, and health-check channels that connect ZeroClaw \
+Add, remove, list, send, and health-check channels that connect Airis \
 to messaging platforms. Supported channel types: telegram, discord, \
 slack, whatsapp, matrix, imessage, email.
 
@@ -1501,7 +1501,7 @@ Examples:
     /// Manage configuration
     // i18n-exempt: clap derive help — framework requires a compile-time literal
     #[command(long_about = "\
-Manage ZeroClaw configuration.
+Manage Airis configuration.
 
 View, set, or initialize config properties by dotted path. \
 Use 'schema' to dump the full JSON Schema for the config file.
@@ -1565,7 +1565,7 @@ Examples:
     /// Run diagnostic self-tests
     // i18n-exempt: clap derive help — framework requires a compile-time literal
     #[command(long_about = "\
-Run diagnostic self-tests to verify the ZeroClaw installation.
+Run diagnostic self-tests to verify the Airis installation.
 
 By default, runs the full test suite including network checks \
 (gateway health, memory round-trip). Use --quick to skip network \
@@ -5313,7 +5313,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
                 "{}",
                 t(
                     "cli-otp-initialized",
-                    "Initialized OTP secret for ZeroClaw."
+                    "Initialized OTP secret for Airis."
                 )
             );
             println!(
@@ -5610,7 +5610,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
                         INFO,
                         ::zeroclaw_log::Event::new(module_path!(), ::zeroclaw_log::Action::Note)
                             .with_attrs(::serde_json::json!({"addr": addr})),
-                        "🔄 Restarting ZeroClaw Gateway on"
+                        "🔄 Restarting Airis Gateway on"
                     );
 
                     // Try to gracefully shutdown existing gateway via admin endpoint
@@ -5836,14 +5836,14 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
                     INFO,
                     ::zeroclaw_log::Event::new(module_path!(), ::zeroclaw_log::Action::Note)
                         .with_attrs(::serde_json::json!({"host": host})),
-                    "🧠 Starting ZeroClaw Daemon on (random port)"
+                    "🧠 Starting Airis Daemon on (random port)"
                 );
             } else {
                 ::zeroclaw_log::record!(
                     INFO,
                     ::zeroclaw_log::Event::new(module_path!(), ::zeroclaw_log::Action::Note)
                         .with_attrs(::serde_json::json!({"host": host, "port": port})),
-                    "🧠 Starting ZeroClaw Daemon on"
+                    "🧠 Starting Airis Daemon on"
                 );
             }
 
@@ -6619,7 +6619,7 @@ async fn async_main_inner(command: clap::Command) -> Result<()> {
                     }
                 }
             }
-            println!("{}", t("cli-status-title", "🦀 ZeroClaw Status"));
+            println!("{}", t("cli-status-title", "Airis Status"));
             println!();
             println!(
                 "{}",
@@ -8846,7 +8846,7 @@ fn handle_estop_command(
                         "{}",
                         t(
                             "cli-otp-initialized",
-                            "Initialized OTP secret for ZeroClaw."
+                            "Initialized OTP secret for Airis."
                         )
                     );
                     println!(
