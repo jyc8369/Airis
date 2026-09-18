@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Low-storage / MacBook Air friendly path.
-# Runs the ESP32 simulator + visualizer directly on your host (no Docker required for the sim).
+# Runs the ESP32 simulator + visualizer directly on your host.
 #
-# This is the recommended way to test the vignette when you don't have 60-80+ GB free for Docker Desktop.
+# This is the recommended lightweight path for testing the vignette.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
