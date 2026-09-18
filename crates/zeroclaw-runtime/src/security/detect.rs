@@ -308,6 +308,12 @@ fn create_selected_sandbox(
     workspace_dir: Option<&Path>,
     extra_roots: &SandboxExtraRoots,
 ) -> Option<Arc<dyn Sandbox>> {
+    #[cfg(not(any(
+        all(feature = "sandbox-landlock", target_os = "linux"),
+        target_os = "macos"
+    )))]
+    let _ = workspace_dir;
+
     match selected {
         SelectedSandboxBackend::None => None,
         SelectedSandboxBackend::Landlock => {
