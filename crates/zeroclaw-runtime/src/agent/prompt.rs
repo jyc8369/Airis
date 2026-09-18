@@ -757,6 +757,7 @@ mod tests {
             format: "aieos".into(),
             aieos_path: None,
             aieos_inline: Some(r#"{"identity":{"names":{"first":"Nova"}}}"#.into()),
+            airis: Default::default(),
         };
 
         let tools: Vec<Box<dyn Tool>> = vec![];
